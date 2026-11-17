@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Atualização de Entrevistas · CESeC</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --border: #e2e8f0;
+      --green-main: #16a34a;
+      --green-hover: #15803d;
+      --green-active: #166534;
+      --green-light: #dcfce7;
+      --green-text: #14532d;
+      --amber-bg: #fef3c7;
+      --amber-text: #92400e;
+      --red-bg: #fee2e2;
+      --red-text: #991b1b;
+      --blue-main: #2563eb;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text-main);
+      line-height: 1.6;
+      font-size: 18px;
+      padding: 24px 16px 60px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 680px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Cabeçalho */
+    header {
+      text-align: center;
+      padding: 12px 0 8px;
+    }
+
+    .logo-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #e0e7ff;
+      color: #3730a3;
+      font-weight: 700;
+      font-size: 15px;
+      padding: 6px 16px;
+      border-radius: 999px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-size: 32px;
+      font-weight: 800;
+      color: #0f172a;
+      letter-spacing: -0.02em;
+      line-height: 1.25;
+      margin-bottom: 8px;
+    }
+
+    .subtitulo {
+      font-size: 19px;
+      color: var(--text-muted);
+    }
+
+    /* Card Principal */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px 28px;
+      box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.06);
+    }
+
+    .card-destaque {
+      border: 2px solid #cbd5e1;
+      text-align: center;
+    }
+
+    .instrucao {
+      font-size: 20px;
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 24px;
+      line-height: 1.4;
+    }
+
+    /* Botão Verde Gigante */
+    .btn-atualizar {
+      width: 100%;
+      min-height: 92px;
+      background-color: var(--green-main);
+      color: #ffffff;
+      border: none;
+      border-radius: 18px;
+      font-size: 25px;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      box-shadow: 0 8px 20px rgba(22, 163, 74, 0.35);
+      transition: all 0.2s ease-in-out;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      padding: 16px 20px;
+    }
+
+    .btn-atualizar:hover:not(:disabled) {
+      background-color: var(--green-hover);
+      box-shadow: 0 10px 24px rgba(22, 163, 74, 0.45);
+      transform: translateY(-2px);
+    }
+
+    .btn-atualizar:active:not(:disabled) {
+      background-color: var(--green-active);
+      transform: translateY(1px);
+      box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+    }
+
+    .btn-atualizar:disabled {
+      background-color: #64748b;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+
+    .btn-legenda {
+      font-size: 15px;
+      font-weight: 500;
+      opacity: 0.9;
+    }
+
+    .dica-auxiliar {
+      margin-top: 16px;
+      font-size: 16px;
+      color: var(--text-muted);
+    }
+
+    /* Banners de Estado e Alertas */
+    .banner-status {
+      display: none;
+      padding: 20px;
+      border-radius: 14px;
+      margin-top: 24px;
+      text-align: left;
+      font-size: 17px;
+    }
+
+    .banner-status.ativo {
+      display: block;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .banner-carregando {
+      background: var(--amber-bg);
+      color: var(--amber-text);
+      border: 1px solid #fde68a;
+    }
+
+    .banner-sucesso {
+      background: var(--green-light);
+      color: var(--green-text);
+      border: 1px solid #bbf7d0;
+    }
+
+    .banner-erro {
+      background: var(--red-bg);
+      color: var(--red-text);
+      border: 1px solid #fecaca;
+    }
+
+    .banner-titulo {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid rgba(146, 64, 14, 0.3);
+      border-top-color: var(--amber-text);
+      border-radius: 50%;
+      animation: rodar 1s linear infinite;
+      display: inline-block;
+    }
+
+    @keyframes rodar {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Card de Informações */
+    .card-info {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .info-titulo {
+      font-size: 20px;
+      font-weight: 700;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .info-item {
+      background: #f1f5f9;
+      padding: 16px;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .info-label {
+      font-size: 15px;
+      font-weight: 600;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .info-valor {
+      font-size: 20px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .info-detalhe {
+      font-size: 15px;
+      color: #475569;
+    }
+
+    /* Conexão */
+    .conexao-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: #e2e8f0;
+      color: #334155;
+    }
+
+    .conexao-status.online {
+      background: #dcfce7;
+      color: #15803d;
+    }
+
+    .conexao-status.offline {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .bolinha {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    /* Rodapé e suporte */
+    footer {
+      text-align: center;
+      font-size: 15px;
+      color: #64748b;
+      margin-top: 12px;
+    }
+
+    .detalhes-tecnicos {
+      margin-top: 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      background: #f8fafc;
+      font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      font-size: 13px;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 200px;
+      overflow-y: auto;
+      text-align: left;
+      display: none;
+    }
+
+    .link-toggle {
+      color: #64748b;
+      text-decoration: underline;
+      font-size: 14px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 4px;
+    }
+
+    @media (max-width: 600px) {
+      body {
+        padding: 16px 12px 40px;
+      }
+      h1 {
+        font-size: 26px;
+      }
+      .btn-atualizar {
+        font-size: 22px;
+        min-height: 84px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Cabeçalho -->
+    <header>
+      <div class="logo-badge">Projeto CESeC</div>
+      <h1>Atualização de Entrevistas</h1>
+      <p class="subtitulo">Busca dados do Kobo e atualiza o SharePoint</p>
+      <div style="margin-top: 12px;">
+        <span id="statusConexao" class="conexao-status">
+          <span class="bolinha"></span>
+          <span id="textoConexao">Verificando conexão...</span>
+        </span>
+      </div>
+    </header>
+
+    <!-- Card Principal do Botão -->
+    <main class="card card-destaque">
+      <div class="instrucao">
+        Clique no botão verde abaixo para buscar as novas entrevistas:
+      </div>
+
+      <button id="btnAtualizar" class="btn-atualizar" onclick="iniciarAtualizacao()">
+        <span>▶ ATUALIZAR DADOS AGORA</span>
+        <span class="btn-legenda">Clique uma vez para iniciar</span>
+      </button>
+
+      <p class="dica-auxiliar">
+        O processo leva cerca de <strong>2 minutos</strong>. Ele baixa as respostas novas do Kobo e salva diretamente nas planilhas da equipe.
+      </p>
+
+      <!-- Banner: Em Andamento -->
+      <div id="bannerAndamento" class="banner-status banner-carregando">
+        <div class="banner-titulo">
+          <span class="spinner"></span>
+          <span>Atualizando as entrevistas agora...</span>
+        </div>
+        <p style="margin-top: 6px;">
+          Por favor, <strong>aguarde um instante</strong>. Não feche esta janela.<br>
+          <span id="tempoDecorrido" style="font-weight: 700; margin-top: 4px; display: inline-block;">Tempo: 00:00</span>
+        </p>
+      </div>
+
+      <!-- Banner: Sucesso -->
+      <div id="bannerSucesso" class="banner-status banner-sucesso">
+        <div class="banner-titulo">
+          <span>✅ Atualização concluída com sucesso!</span>
+        </div>
+        <p id="mensagemSucesso" style="margin-top: 6px; font-weight: 500;">
+          As novas entrevistas foram adicionadas e as planilhas do SharePoint estão prontas.
+        </p>
+      </div>
+
+      <!-- Banner: Erro -->
+      <div id="bannerErro" class="banner-status banner-erro">
+        <div class="banner-titulo">
+          <span>⚠️ Atenção</span>
+        </div>
+        <p id="mensagemErro" style="margin-top: 6px;">
+          Não foi possível atualizar agora. Aguarde 2 minutos e tente novamente.
+        </p>
+      </div>
+    </main>
+
+    <!-- Card de Informações e Histórico -->
+    <section class="card card-info">
+      <div class="info-titulo">
+        <span>🕒</span>
+        <span>Informações da Última Atualização</span>
+      </div>
+
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="info-label">Horário da Última Atualização</span>
+          <span id="infoDataHora" class="info-valor">Carregando...</span>
+          <span id="infoTipo" class="info-detalhe">Aguardando dados do servidor</span>
+        </div>
+
+        <div class="info-item">
+          <span class="info-label">Situação do SharePoint</span>
+          <span id="infoResultado" class="info-valor">Carregando...</span>
+          <span id="infoDetalhe" class="info-detalhe"></span>
+        </div>
+
+        <div class="info-item">
+          <span class="info-label">Total de Respostas no Kobo</span>
+          <span id="infoKobo" class="info-valor">--</span>
+          <span id="infoKoboDiff" class="info-detalhe"></span>
+        </div>
+
+        <div class="info-item">
+          <span class="info-label">Próxima Atualização Automática</span>
+          <span id="infoProxima" class="info-valor">--</span>
+          <span class="info-detalhe">O sistema também atualiza sozinho às 06h, 12h, 14h, 16h e 17h</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Rodapé -->
+    <footer>
+      <p>Em caso de dúvidas ou problemas, avise o <strong>Gabriel</strong>.</p>
+      <div style="margin-top: 10px;">
+        <button class="link-toggle" onclick="toggleLogs()">Mostrar detalhes técnicos</button>
+      </div>
+      <div id="caixaLogs" class="detalhes-tecnicos">Carregando registro técnico...</div>
+    </footer>
+  </div>
+
+  <script>
+    // Configuração de Origem da API:
+    // Se acessado via GitHub Pages (salomaozao.github.io), direciona para o Homeserver via Tailscale Funnel.
+    // Se acessado diretamente pelo homeserver, usa caminho relativo.
+    const HOMESERVER_URL = "https://malol-inspiron-3583.taile6aa3d.ts.net";
+    const API_BASE = window.location.origin.includes("github.io") ? HOMESERVER_URL : "";
+
+    let emExecucao = false;
+    let timerInterval = null;
+    let segundosContador = 0;
+
+    const btnAtualizar = document.getElementById("btnAtualizar");
+    const statusConexao = document.getElementById("statusConexao");
+    const textoConexao = document.getElementById("textoConexao");
+    const bannerAndamento = document.getElementById("bannerAndamento");
+    const bannerSucesso = document.getElementById("bannerSucesso");
+    const bannerErro = document.getElementById("bannerErro");
+    const mensagemSucesso = document.getElementById("mensagemSucesso");
+    const mensagemErro = document.getElementById("mensagemErro");
+    const tempoDecorrido = document.getElementById("tempoDecorrido");
+
+    const infoDataHora = document.getElementById("infoDataHora");
+    const infoTipo = document.getElementById("infoTipo");
+    const infoResultado = document.getElementById("infoResultado");
+    const infoDetalhe = document.getElementById("infoDetalhe");
+    const infoKobo = document.getElementById("infoKobo");
+    const infoKoboDiff = document.getElementById("infoKoboDiff");
+    const infoProxima = document.getElementById("infoProxima");
+    const caixaLogs = document.getElementById("caixaLogs");
+
+    function formatarSegundos(seg) {
+      const m = Math.floor(seg / 60);
+      const s = seg % 60;
+      return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    }
+
+    async function checarStatus() {
+      try {
+        const resp = await fetch(`${API_BASE}/api/status`, { cache: "no-store" });
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const data = await resp.json();
+
+        // Conexão OK
+        statusConexao.className = "conexao-status online";
+        textoConexao.textContent = "Servidor Conectado";
+
+        // Preenche informações
+        if (data.last_run) {
+          const lr = data.last_run;
+          infoDataHora.textContent = lr.data_hora ? lr.data_hora : "Hoje às 12:00";
+          infoTipo.textContent = lr.tipo ? `Modo: ${lr.tipo}` : "";
+          infoResultado.textContent = lr.resultado ? lr.resultado : "Publicada";
+          infoDetalhe.textContent = lr.detalhes ? lr.detalhes : "";
+
+          if (lr.respostas_kobo) {
+            infoKobo.textContent = `${lr.respostas_kobo} entrevistas`;
+            if (lr.kobo_diff > 0) {
+              infoKoboDiff.textContent = `(+${lr.kobo_diff} nova(s) nesta rodada)`;
+              infoKoboDiff.style.color = "#15803d";
+              infoKoboDiff.style.fontWeight = "700";
+            } else {
+              infoKoboDiff.textContent = "(Nenhuma nova entrevista nesta última checagem)";
+              infoKoboDiff.style.color = "#64748b";
+              infoKoboDiff.style.fontWeight = "normal";
+            }
+          }
+          if (lr.proxima_agendada) {
+            infoProxima.textContent = lr.proxima_agendada;
+          }
+        }
+
+        // Estado de Execução
+        if (data.running) {
+          ativarModoCarregando(data.elapsed_seconds || 0);
+        } else if (emExecucao) {
+          // Estava executando e terminou!
+          desativarModoCarregando();
+          if (data.last_code === 0 || (data.last_run && data.last_run.sucesso)) {
+            mostrarSucesso(data);
+          } else {
+            mostrarErro(data.last_error || "Houve uma instabilidade na atualização. Tente novamente.");
+          }
+        }
+      } catch (err) {
+        statusConexao.className = "conexao-status offline";
+        textoConexao.textContent = "Tentando conectar ao servidor...";
+      }
+    }
+
+    function ativarModoCarregando(segundosIniciais = 0) {
+      emExecucao = true;
+      btnAtualizar.disabled = true;
+      btnAtualizar.innerHTML = "<span>⏳ ATUALIZANDO DADOS...</span><span class='btn-legenda'>Aguarde a finalização</span>";
+      bannerAndamento.classList.add("ativo");
+      bannerSucesso.classList.remove("ativo");
+      bannerErro.classList.remove("ativo");
+
+      segundosContador = segundosIniciais;
+      tempoDecorrido.textContent = `Tempo: ${formatarSegundos(segundosContador)}`;
+
+      if (!timerInterval) {
+        timerInterval = setInterval(() => {
+          segundosContador++;
+          tempoDecorrido.textContent = `Tempo: ${formatarSegundos(segundosContador)}`;
+        }, 1000);
+      }
+    }
+
+    function desativarModoCarregando() {
+      emExecucao = false;
+      btnAtualizar.disabled = false;
+      btnAtualizar.innerHTML = "<span>▶ ATUALIZAR DADOS AGORA</span><span class='btn-legenda'>Clique uma vez para iniciar</span>";
+      bannerAndamento.classList.remove("ativo");
+
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+    }
+
+    function mostrarSucesso(data) {
+      bannerSucesso.classList.add("ativo");
+      bannerErro.classList.remove("ativo");
+
+      let texto = "As novas entrevistas foram adicionadas e as planilhas do SharePoint estão prontas.";
+      if (data && data.last_run) {
+        if (data.last_run.arquivos_publicados) {
+          texto = `${data.last_run.arquivos_publicados} arquivos foram atualizados com sucesso no SharePoint!`;
+        }
+      }
+      mensagemSucesso.textContent = texto;
+
+      // Mantém mensagem de sucesso visível
+      setTimeout(() => {
+        bannerSucesso.classList.remove("ativo");
+      }, 30000);
+    }
+
+    function mostrarErro(msg) {
+      bannerErro.classList.add("ativo");
+      bannerSucesso.classList.remove("ativo");
+      mensagemErro.textContent = msg || "Não foi possível atualizar agora. Aguarde 2 minutos e tente novamente.";
+    }
+
+    async function iniciarAtualizacao() {
+      if (emExecucao) return;
+
+      bannerSucesso.classList.remove("ativo");
+      bannerErro.classList.remove("ativo");
+
+      try {
+        ativarModoCarregando(0);
+        const resp = await fetch(`${API_BASE}/api/atualizar`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" }
+        });
+
+        const data = await resp.json();
+        if (!resp.ok && resp.status !== 200) {
+          throw new Error(data.mensagem || `Erro HTTP ${resp.status}`);
+        }
+      } catch (err) {
+        desativarModoCarregando();
+        mostrarErro(err.message || "Erro ao conectar com o servidor.");
+      }
+    }
+
+    async function toggleLogs() {
+      if (caixaLogs.style.display === "block") {
+        caixaLogs.style.display = "none";
+        return;
+      }
+      caixaLogs.style.display = "block";
+      caixaLogs.textContent = "Carregando registros...";
+      try {
+        const resp = await fetch(`${API_BASE}/api/logs`);
+        const data = await resp.json();
+        if (data.ok && data.conteudo) {
+          caixaLogs.textContent = data.conteudo;
+        } else {
+          caixaLogs.textContent = "Nenhum log disponível no momento.";
+        }
+      } catch (e) {
+        caixaLogs.textContent = "Erro ao carregar logs: " + e.message;
+      }
+    }
+
+    // Inicia checando o status imediatamente e depois a cada 4 segundos
+    checarStatus();
+    setInterval(checarStatus, 4000);
+  </script>
+</body>
+</html>
